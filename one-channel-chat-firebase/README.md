@@ -28,17 +28,20 @@ From Cloud Firestore section `+ Start collection` and name it `messages`.
 rules_version='2'
 service cloud.firestore {
   match /databases/{database}/documents {
+
     match /{document=**} {
       allow read, write: if false;
     }
+
     match /messages/{docId} {
       allow read: if request.auth.uid != null;
       allow create: if canCreateMessage();
     }
-    function Message() {
+
+    function canCreateMessage() {
        let isSignedIn = request.auth.uid != null;
        let isOwner = request.auth.uid == request.resource.data.uid;
-       let isNotBanned = exist(/databases/$(database)/documents/banned/$(request.auth.uid)) == false;
+       let isNotBanned = exists(/databases/$(database)/documents/banned/$(request.auth.uid)) == false;
        return isSignedIn && isOwner && isNotBanned;
     }
   }
